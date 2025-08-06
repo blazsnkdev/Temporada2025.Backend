@@ -11,8 +11,9 @@ namespace Temporada2025.Backend.Services
         public bool ValidarDorsal(int dorsal);
 
         Task<(bool,string?)> RegistrarJugador(RegistrarJugadorRequest request);
-        
+        Task<(bool,string?)> ValidarJugador(LoginDto request);
 
 
+        string GenerarTokenJwt(Jugador jugador);
     }
 }

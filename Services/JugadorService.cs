@@ -1,5 +1,9 @@
 ﻿
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO.Pipelines;
+using System.Security.Claims;
+using System.Text;
 using Temporada2025.Backend.Data;
 using Temporada2025.Backend.DTOs;
 using Temporada2025.Backend.Models;
@@ -9,9 +13,11 @@ namespace Temporada2025.Backend.Services
     public class JugadorService : IJugadorService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public JugadorService(IUnitOfWork unitOfWork)
+        private readonly IConfiguration _config;
+        public JugadorService(IUnitOfWork unitOfWork, IConfiguration config)
         {
             _unitOfWork = unitOfWork;
+            _config = config;
         }
 
         public async Task<(bool,string?)> RegistrarJugador(RegistrarJugadorRequest request)
@@ -101,6 +107,40 @@ namespace Temporada2025.Backend.Services
             if (opcionesValidas.Contains(posicion))//si esta dentro de las opciones
                 return true;
             return false;
+        }
+
+        public async Task<(bool,string?)> ValidarJugador(LoginDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.nombre) || string.IsNullOrWhiteSpace(request.password))
+                return (false,"Error null");
+
+            var jugador = await _unitOfWork.JugadorRepository.GetJugadorByNombreAndPassword(request.nombre, request.password);
+            if (jugador == null)
+                return (false, "No existe");
+            var token = GenerarTokenJwt(jugador);
+            return (true, token);
+        }
+
+        public string GenerarTokenJwt(Jugador jugador)
+        {
+            var claims = new[]
+        {
+                //guardamos sus identificadores en el token
+            new Claim(ClaimTypes.NameIdentifier, jugador.Id.ToString()),
+            new Claim(ClaimTypes.Name, jugador.Nombre),
+        };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddHours(1),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
