@@ -21,8 +21,8 @@ namespace Temporada2025.Backend.Controllers
             var result = await _jugadorService.ValidarJugador(request);
             if (!result.Item1)
                 return Unauthorized($"Error: {result.Item2}");
-            var token = _jugadorService.GenerarTokenJwt(request);
-            return Ok(new { Token = token });
+            
+            return Ok(new { Token = result.Item2 });
         }
 
 
