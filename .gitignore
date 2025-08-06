@@ -1,0 +1,66 @@
+## Compilados ##
+bin/
+obj/
+out/
+
+## Archivos de usuario y configuración local ##
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.vscode/
+
+## Archivos de Visual Studio ##
+.vs/
+*.csproj.user
+
+## Logs ##
+*.log
+
+## Archivos de publicación ##
+.publish/
+
+## Configuración y secretos locales ##
+appsettings.Development.json
+secrets.json
+
+## Paquetes y dependencias ##
+*.nupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+*.nuget.props
+*.nuget.targets
+
+## Cache de dependencias ##
+.nuget/
+*.dbmdl
+
+## Archivos de sistema ##
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## Archivos de MacOS y Linux ##
+.DS_Store
+*.swp
+*.swo
+
+## Archivos temporales ##
+*.tmp
+*.temp
+*.bak
+*.backup
+
+## Archivos de Rider (JetBrains) ##
+.idea/
+*.sln.iml
+
+## Archivos generados por testing ##
+TestResults/
+coverage/
+
+## Archivos de publicación de WebApp ##
+wwwroot/dist/
+wwwroot/lib/
