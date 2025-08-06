@@ -2,7 +2,7 @@
 {
     public interface IUnitOfWork
     {
-        public JugadorRepository JugadorRepository { get; }
+        public IJugadorRepository JugadorRepository { get; }
         Task<int> SaveChangesAsync();
     }
 }

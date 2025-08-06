@@ -16,18 +16,29 @@ namespace Temporada2025.Backend.Services
 
         public async Task<(bool,string?)> RegistrarJugador(RegistrarJugadorRequest request)
         {
+            var existeJugador = await _unitOfWork.JugadorRepository.ExisteJugadorAsync(
+                request.nombre, 
+                request.apellidoPaterno, 
+                request.apellidoMaterno, 
+                request.fechaNacimiento);
+
+            if (existeJugador)
+                return (false, "El jugador ya está registrado.");
+
             if (string.IsNullOrEmpty(request.nombre) ||
                 string.IsNullOrEmpty(request.apellidoMaterno) ||
                 string.IsNullOrEmpty(request.apellidoMaterno))
-                return (false,null);
+                return (false,"No se admite valores nulos");
+
+
             if (!ValidarDorsal(request.dorsal))
-                return (false, null);
+                return (false, "Dorsal invalida");
             if (!ValidarPie(request.pie))
-                return (false, null);
+                return (false, "Pie invalido");
             if (!ValidarPosicion(request.posicion))
-                return (false, null);
+                return (false, "Posición invalida");
             if (request.fechaNacimiento >= DateOnly.FromDateTime(DateTime.Now))
-                return (false, null);
+                return (false, "Fecha de nacimiento invalida");
 
             var password = GenerarPassword(request.nombre, request.apellidoPaterno, DateTime.Now);
 
@@ -46,12 +57,8 @@ namespace Temporada2025.Backend.Services
             };
 
             await _unitOfWork.JugadorRepository.AddAsync(jugador);
-            var result = await _unitOfWork.SaveChangesAsync();
-            if (result > 0)
-            {
-                return (true, password);
-            }
-            return (false, null);
+            
+            return (true,password);
         }
 
         public string GenerarPassword(string nombre, string apellidoPaterno, DateTime fechaRegistro)

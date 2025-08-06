@@ -23,10 +23,10 @@ namespace Temporada2025.Backend.Controllers
         {
             var result = await _jugadorService.RegistrarJugador(request);
 
-            if(!result.Item1 || result.Item2 is null)
-                return BadRequest("Error al registrar el jugador. Verifique los datos proporcionados.");
+            if(!result.Item1)
+                return BadRequest($"Error: {result.Item2}");
 
-            return Ok($"Jugador registrado exitosamente: {result.Item2}");
+            return Ok($"Jugador registrado, Password: {result.Item2}");
         }
 
 

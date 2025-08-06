@@ -10,6 +10,7 @@ namespace Temporada2025.Backend.Data
         Task UpdateAsync(Jugador jugador);
         Task DeleteAsync(Jugador jugador);
         Task<Jugador?> GetJugadorByNombreAndPassword(string nombre, string password);
+        Task<bool> ExisteJugadorAsync(string nombre, string apellidoPaterno, string apellidoMaterno, DateOnly fechaNacimiento);
         //Task<IEnumerable<Jugador>> GetJugadoresByEquipoIdAsync(Guid equipoId);
         //Task<IEnumerable<Jugador>> GetJugadoresByPosicionAsync(string posicion);
     }

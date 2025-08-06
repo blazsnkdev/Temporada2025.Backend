@@ -11,6 +11,16 @@ namespace Temporada2025.Backend.Data
             _context = context;
         }
 
+        public async Task<bool> ExisteJugadorAsync(string nombre, string apellidoPaterno, string apellidoMaterno, DateOnly fechaNacimiento)
+        {
+            return await _context.TblJugador.AnyAsync(j =>
+                j.Nombre == nombre &&
+                j.ApellidoPaterno == apellidoPaterno &&
+                j.ApellidoMaterno == apellidoMaterno &&
+                j.FechaNacimiento == fechaNacimiento);
+        }
+
+
         public async Task<Jugador?> GetJugadorByNombreAndPassword(string nombre, string password)
         {
             return await _context.TblJugador

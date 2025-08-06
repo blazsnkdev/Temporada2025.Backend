@@ -10,8 +10,13 @@ namespace Temporada2025.Backend
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Jugador>()
+                .HasMany(j => j.Estadisticas)
+                .WithOne(e => e.Jugador)
+                .HasForeignKey(e => e.JugadorId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public DbSet<Jugador> TblJugador { get; set; }

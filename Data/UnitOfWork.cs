@@ -3,10 +3,10 @@ namespace Temporada2025.Backend.Data
 {
     public class UnitOfWork : IUnitOfWork
     {
-        public JugadorRepository JugadorRepository { get; }
+        public IJugadorRepository JugadorRepository { get; }
         private readonly AppDbContext _context;
 
-        public UnitOfWork(JugadorRepository jugadorRepository, AppDbContext context)
+        public UnitOfWork(IJugadorRepository jugadorRepository, AppDbContext context)
         {
             JugadorRepository = jugadorRepository;
             _context = context;
