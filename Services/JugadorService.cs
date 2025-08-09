@@ -78,8 +78,6 @@ namespace Temporada2025.Backend.Services
             return password;
         }
 
-       
-
         public bool ValidarDorsal(int dorsal)
         {
             if(dorsal<=0)

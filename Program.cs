@@ -15,10 +15,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 //Repositoy
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IJugadorRepository,JugadorRepository>();
+builder.Services.AddScoped<IEstadisticaRepository, EstadisticaRepository>();
 
 
 //services
 builder.Services.AddScoped<IJugadorService, JugadorService>();
+builder.Services.AddScoped<IEstadisticaService, EstadisticaService>();
+
+builder.Services.AddHttpContextAccessor();
 
 
 
