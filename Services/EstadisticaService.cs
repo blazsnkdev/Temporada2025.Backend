@@ -1,7 +1,11 @@
-﻿using System.Security.Claims;
+﻿using Dapper;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Temporada2025.Backend.Data;
 using Temporada2025.Backend.DTOs;
+using Temporada2025.Backend.DTOs.Response;
 using Temporada2025.Backend.Models;
 
 namespace Temporada2025.Backend.Services
@@ -13,12 +17,13 @@ namespace Temporada2025.Backend.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         private readonly IUnitOfWork _UoW;
+        private readonly IConfiguration _configuration; 
 
-
-        public EstadisticaService(IHttpContextAccessor httpContextAccessor, IUnitOfWork UoW)
+        public EstadisticaService(IHttpContextAccessor httpContextAccessor, IUnitOfWork UoW, IConfiguration configuration)
         {
             _httpContextAccessor = httpContextAccessor;
             _UoW = UoW;
+            _configuration = configuration;
         }
 
         public double CalcularPuntaje(int partidosJugados= 0, int goles=0, int asistencias=0)
@@ -38,6 +43,7 @@ namespace Temporada2025.Backend.Services
                 return false;
 
             //aqui obtenemos el id del jugador desde el token de autenticacion
+            //esto a futuro podria ser una clase con una funcion para obtener el id del jugador
             var jugadorIdClaim = _httpContextAccessor.HttpContext.User
             .FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(jugadorIdClaim, out var jugadorId))
@@ -79,6 +85,42 @@ namespace Temporada2025.Backend.Services
             return true; //se jugo al menos un partido
         }
 
+        public async Task<List<ListarEstadisticaResponse>> ListarEstadisticas()
+        {
+            var estadisticas = new List<ListarEstadisticaResponse>();
+
+            var jugadorIdClaim = _httpContextAccessor.HttpContext.User
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!Guid.TryParse(jugadorIdClaim, out var jugadorId))
+                return estadisticas;
+
+            var connectionString = _configuration.GetConnectionString("cn1");
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                string sql = @"
+                    SELECT 
+                        FechaJornada,
+                        PartidosJugados,
+                        Goles,
+                        Asistencias,
+                        Puntaje,
+                        FechaRegistro
+                    FROM TblEstadistica
+                    WHERE JugadorId = @JugadorId
+                    ORDER BY FechaJornada DESC;";
+
+                var result = await connection.QueryAsync<ListarEstadisticaResponse>(
+                    sql,
+                    new { JugadorId = jugadorId }
+                );
+
+                estadisticas = result.ToList();
+            }
+
+            return estadisticas;
+        }
 
     }
 }

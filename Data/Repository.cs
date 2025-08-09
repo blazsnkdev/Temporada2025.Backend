@@ -9,6 +9,11 @@ namespace Temporada2025.Backend.Data
         {
             _context = context;
         }
+        public async Task<IEnumerable<T>> GetAllAsync(Guid id)
+        {
+            return await _context.Set<T>().Where(e => EF.Property<Guid>(e, "Id") == id).ToListAsync();
+        }
+
         public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _context.Set<T>().ToListAsync();

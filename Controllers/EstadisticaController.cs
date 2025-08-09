@@ -31,5 +31,14 @@ namespace Temporada2025.Backend.Controllers
             return Ok("Estadística registrada correctamente");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ListarEstadisticas()
+        {
+            return Ok(await _estadisticaService.ListarEstadisticas());
+        }
+
+
+
+
     }
 }

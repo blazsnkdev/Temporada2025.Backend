@@ -1,4 +1,5 @@
 ﻿using Temporada2025.Backend.DTOs;
+using Temporada2025.Backend.DTOs.Response;
 using Temporada2025.Backend.Models;
 
 namespace Temporada2025.Backend.Services
@@ -14,5 +15,9 @@ namespace Temporada2025.Backend.Services
         bool ValidarFechaJornada(DateOnly fechaJornada);
 
         Task<bool> RegistrarEstadistica(RegistrarEstadisticaRequest request);
+
+
+        Task<List<ListarEstadisticaResponse>> ListarEstadisticas();
+
     }
 }
