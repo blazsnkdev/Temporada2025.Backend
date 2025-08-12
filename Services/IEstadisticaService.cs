@@ -16,8 +16,10 @@ namespace Temporada2025.Backend.Services
 
         Task<bool> RegistrarEstadistica(RegistrarEstadisticaRequest request);
 
-
-        Task<List<ListarEstadisticaResponse>> ListarEstadisticas();
+        Task<EstadisticaResponse?> ObtenerEstadistica(Guid estadisticaId);
+        Task<List<EstadisticaResponse>> ListarEstadisticas();
+        Task<bool> ActualizarEstadistica(Guid estadisticaId,ActualizarEstadisticaRequest request);
+        Task<bool> EliminarEstadistica(Guid estadisticaId);
 
     }
 }

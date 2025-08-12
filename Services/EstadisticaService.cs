@@ -85,15 +85,11 @@ namespace Temporada2025.Backend.Services
             return true; //se jugo al menos un partido
         }
 
-        public async Task<List<ListarEstadisticaResponse>> ListarEstadisticas()
+        public async Task<List<EstadisticaResponse>> ListarEstadisticas()
         {
-            var estadisticas = new List<ListarEstadisticaResponse>();
+            var estadisticas = new List<EstadisticaResponse>();
 
-            var jugadorIdClaim = _httpContextAccessor.HttpContext.User
-                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (!Guid.TryParse(jugadorIdClaim, out var jugadorId))
-                return estadisticas;
+            var jugadorId = ObtenerJugadorId();
 
             var connectionString = _configuration.GetConnectionString("cn1");
 
@@ -108,10 +104,10 @@ namespace Temporada2025.Backend.Services
                         Puntaje,
                         FechaRegistro
                     FROM TblEstadistica
-                    WHERE JugadorId = @JugadorId
+                    WHERE JugadorId = @JugadorId 
                     ORDER BY FechaJornada DESC;";
 
-                var result = await connection.QueryAsync<ListarEstadisticaResponse>(
+                var result = await connection.QueryAsync<EstadisticaResponse>(
                     sql,
                     new { JugadorId = jugadorId }
                 );
@@ -122,5 +118,70 @@ namespace Temporada2025.Backend.Services
             return estadisticas;
         }
 
+        public async Task<EstadisticaResponse?> ObtenerEstadistica(Guid estadisticaId)
+        {
+            var jugadorId = ObtenerJugadorId();
+
+            var connectionString = _configuration.GetConnectionString("cn1");
+            using (var connection = new SqlConnection(connectionString))
+            {
+                string sql = @"
+                    SELECT 
+                        FechaJornada,
+                        PartidosJugados,
+                        Goles,
+                        Asistencias,
+                        Puntaje,
+                        FechaRegistro
+                    FROM TblEstadistica
+                    WHERE Id = @EstadisticaId
+                    AND JugadorId = @JugadorId
+                    ORDER BY FechaJornada DESC;";
+                var result = await connection.QueryFirstOrDefaultAsync<EstadisticaResponse>(
+                    sql,
+                    new { EstadisticaId = estadisticaId,JugadorId = jugadorId }
+                );
+                return result;
+            }
+        }
+
+
+        private Guid? ObtenerJugadorId()
+        {
+            var jugadorIdClaim = _httpContextAccessor.HttpContext.User
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            return Guid.TryParse(jugadorIdClaim, out var jugadorId) ? jugadorId : (Guid?)null;
+        }
+        //solo encargarse del update
+        public async Task<bool> ActualizarEstadistica(Guid estadisticaId, ActualizarEstadisticaRequest request)
+        {
+            var estadistica = await _UoW.EstadisticaRepository.GetByIdAsync(estadisticaId);
+            var jugadorId = ObtenerJugadorId();
+            if (estadistica == null)
+                return false;
+            if(jugadorId is null)
+                return false;
+
+            estadistica.PartidosJugados = request.partidosJugados;
+            estadistica.Goles = request.goles;
+            estadistica.Asistencias = request.asistencias;
+            estadistica.Puntaje = CalcularPuntaje(request.partidosJugados, request.goles, request.asistencias);
+            estadistica.FechaRegistro = DateTime.Now;
+            await _UoW.EstadisticaRepository.UpdateAsync(estadistica);
+            return true;
+        }
+
+        public async Task<bool> EliminarEstadistica(Guid estadisticaId)
+        {
+            var estadistica = await _UoW.EstadisticaRepository.GetByIdAsync(estadisticaId);
+            var jugadorId = ObtenerJugadorId();
+            if (estadistica == null)
+                return false;
+            if (jugadorId is null)
+                return false;
+            await _UoW.EstadisticaRepository.DeleteAsync(estadistica);
+            return true;
+        }
     }
 }

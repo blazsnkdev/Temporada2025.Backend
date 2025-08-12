@@ -14,7 +14,20 @@ namespace Temporada2025.Backend.Controllers
         {
             _estadisticaService = estadisticaService;
         }
-
+        [HttpGet("{id}")]
+        public async Task<IActionResult> ObtenerEstadisticaPorId(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return BadRequest("Invalid ID");
+            }
+            var estadistica = await _estadisticaService.ObtenerEstadistica(id);
+            if (estadistica == null)
+            {
+                return NotFound("Estadística no encontrada");
+            }
+            return Ok(estadistica);
+        }
 
         [HttpPost]
         public async Task<IActionResult> RegistrarEstadistica([FromBody] RegistrarEstadisticaRequest request)
@@ -34,9 +47,43 @@ namespace Temporada2025.Backend.Controllers
         [HttpGet]
         public async Task<IActionResult> ListarEstadisticas()
         {
-            return Ok(await _estadisticaService.ListarEstadisticas());
+            var listadoEstadisticas = await _estadisticaService.ListarEstadisticas();
+            if (listadoEstadisticas == null || !listadoEstadisticas.Any())
+            {
+                return NotFound("No se encontraron estadísticas");
+            }
+            return Ok(listadoEstadisticas);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> ActualizarEstadistica(Guid id, [FromBody] ActualizarEstadisticaRequest request)
+        {
+            if (id == Guid.Empty || request == null)
+            {
+                return BadRequest("Error en el id o el request");
+            }
+            bool resultado = await _estadisticaService.ActualizarEstadistica(id, request);
+            if (!resultado)
+            {
+                return NotFound("Estadística no encontrada o error al actualizar");
+            }
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> EliminarEstadistica(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return BadRequest("Id invalido");
+            }
+            bool resultado = await _estadisticaService.EliminarEstadistica(id);
+            if (!resultado)
+            {
+                return NotFound("Estadística no encontrada o error al eliminar");
+            }
+            return NoContent();
+        }
 
 
 
