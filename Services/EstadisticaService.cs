@@ -67,11 +67,9 @@ namespace Temporada2025.Backend.Services
 
         public bool ValidarFechaJornada(DateOnly fechaJornada)
         {
-            if(fechaJornada.Year != 2025)
-            {
-                return false; 
-            }
-            return true; 
+            var fechaActual = DateOnly.FromDateTime(DateTime.Now);
+            return fechaJornada.Year == 2025 && fechaJornada <= fechaActual;
+
         }
 
         public bool ValidarJornada(int partidosJugados = 0)//esto para validar si en la jornada se jugo
