@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using Temporada2025.Backend.Data;
 using Temporada2025.Backend.DTOs;
+using Temporada2025.Backend.DTOs.Response;
 using Temporada2025.Backend.Models;
 
 namespace Temporada2025.Backend.Services
@@ -14,10 +15,12 @@ namespace Temporada2025.Backend.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _config;
-        public JugadorService(IUnitOfWork unitOfWork, IConfiguration config)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public JugadorService(IUnitOfWork unitOfWork, IConfiguration config, IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _config = config;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<(bool,string?)> RegistrarJugador(RegistrarJugadorRequest request)
@@ -139,6 +142,36 @@ namespace Temporada2025.Backend.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<DetalleJugadorResponse?> DetalleJugador()
+        {
+            var jugadorIdSesion = ObtenerJugadorId();
+            var jugadorDetalleRepo = await _unitOfWork.JugadorRepository.GetByIdAsync(jugadorIdSesion.Value);
+            if(jugadorDetalleRepo == null)
+            {
+                return null;
+            }
+            var detalle = new DetalleJugadorResponse(
+                jugadorDetalleRepo.Nombre,
+                jugadorDetalleRepo.ApellidoPaterno,
+                jugadorDetalleRepo.ApellidoMaterno,
+                jugadorDetalleRepo.Posición,
+                jugadorDetalleRepo.Pie,
+                jugadorDetalleRepo.Dorsal,
+                jugadorDetalleRepo.FechaNacimiento
+            );
+            return detalle;
+        }
+
+        public Guid? ObtenerJugadorId()
+        {
+            var jugadorIdClaim = _httpContextAccessor.HttpContext?.User
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            return Guid.TryParse(jugadorIdClaim, out var jugadorId)
+                ? jugadorId
+                : (Guid?)null;
         }
     }
 }

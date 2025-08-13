@@ -13,17 +13,18 @@ namespace Temporada2025.Backend.Services
     public class EstadisticaService : IEstadisticaService
     {
 
-        //registrar esto ene l progam
-        private readonly IHttpContextAccessor _httpContextAccessor;
+
 
         private readonly IUnitOfWork _UoW;
-        private readonly IConfiguration _configuration; 
+        private readonly IConfiguration _configuration;
+        private readonly IJugadorService _jugadorService;
 
-        public EstadisticaService(IHttpContextAccessor httpContextAccessor, IUnitOfWork UoW, IConfiguration configuration)
+        public EstadisticaService(IUnitOfWork UoW, IConfiguration configuration, IJugadorService jugadorService)
         {
-            _httpContextAccessor = httpContextAccessor;
+
             _UoW = UoW;
             _configuration = configuration;
+            _jugadorService = jugadorService;
         }
 
         public double CalcularPuntaje(int partidosJugados= 0, int goles=0, int asistencias=0)
@@ -42,11 +43,8 @@ namespace Temporada2025.Backend.Services
             if (!fechaValida)
                 return false;
 
-            //aqui obtenemos el id del jugador desde el token de autenticacion
-            //esto a futuro podria ser una clase con una funcion para obtener el id del jugador
-            var jugadorIdClaim = _httpContextAccessor.HttpContext.User
-            .FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(jugadorIdClaim, out var jugadorId))
+            var jugadorId = _jugadorService.ObtenerJugadorId();
+            if (jugadorId is null)
                 return false;
 
             double puntaje = CalcularPuntaje(request.partidosJugados, request.goles, request.asistencias);
@@ -57,7 +55,7 @@ namespace Temporada2025.Backend.Services
             PartidosJugados = request.partidosJugados,
             Goles = request.goles,
             Asistencias = request.asistencias,
-            JugadorId = jugadorId,
+            JugadorId = jugadorId.Value,
             Puntaje = puntaje,
             FechaRegistro = DateTime.Now
             };
@@ -89,7 +87,7 @@ namespace Temporada2025.Backend.Services
         {
             var estadisticas = new List<EstadisticaResponse>();
 
-            var jugadorId = ObtenerJugadorId();
+            var jugadorId = _jugadorService.ObtenerJugadorId();
 
             var connectionString = _configuration.GetConnectionString("cn1");
 
@@ -120,7 +118,7 @@ namespace Temporada2025.Backend.Services
 
         public async Task<EstadisticaResponse?> ObtenerEstadistica(Guid estadisticaId)
         {
-            var jugadorId = ObtenerJugadorId();
+            var jugadorId = _jugadorService.ObtenerJugadorId();
 
             var connectionString = _configuration.GetConnectionString("cn1");
             using (var connection = new SqlConnection(connectionString))
@@ -146,18 +144,18 @@ namespace Temporada2025.Backend.Services
         }
 
 
-        private Guid? ObtenerJugadorId()
-        {
-            var jugadorIdClaim = _httpContextAccessor.HttpContext.User
-                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //private Guid? ObtenerJugadorId()
+        //{
+        //    var jugadorIdClaim = _U _httpContextAccessor.HttpContext.User
+        //        .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            return Guid.TryParse(jugadorIdClaim, out var jugadorId) ? jugadorId : (Guid?)null;
-        }
+        //    return Guid.TryParse(jugadorIdClaim, out var jugadorId) ? jugadorId : (Guid?)null;
+        //}
         //solo encargarse del update
         public async Task<bool> ActualizarEstadistica(Guid estadisticaId, ActualizarEstadisticaRequest request)
         {
             var estadistica = await _UoW.EstadisticaRepository.GetByIdAsync(estadisticaId);
-            var jugadorId = ObtenerJugadorId();
+            var jugadorId = _jugadorService.ObtenerJugadorId();
             if (estadistica == null)
                 return false;
             if(jugadorId is null)
@@ -175,7 +173,7 @@ namespace Temporada2025.Backend.Services
         public async Task<bool> EliminarEstadistica(Guid estadisticaId)
         {
             var estadistica = await _UoW.EstadisticaRepository.GetByIdAsync(estadisticaId);
-            var jugadorId = ObtenerJugadorId();
+            var jugadorId = _jugadorService.ObtenerJugadorId();
             if (estadistica == null)
                 return false;
             if (jugadorId is null)

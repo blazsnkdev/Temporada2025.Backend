@@ -24,6 +24,15 @@ builder.Services.AddScoped<IEstadisticaService, EstadisticaService>();
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("MiPoliticaCors", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 
 builder.Services.AddControllers();
@@ -59,6 +68,16 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+//añadi esto para los cors
+app.UseCors(options =>
+{
+    options.WithOrigins("http://localhost:5173")
+           .AllowAnyMethod()
+           .AllowCredentials()
+           .AllowAnyHeader();
+});
+
 
 
 app.MapControllers();

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Temporada2025.Backend.DTOs;
 using Temporada2025.Backend.Services;
@@ -7,6 +8,7 @@ namespace Temporada2025.Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class EstadisticaController : ControllerBase
     {
         private readonly IEstadisticaService _estadisticaService;

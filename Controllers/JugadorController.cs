@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Temporada2025.Backend.DTOs;
 using Temporada2025.Backend.Models;
@@ -8,6 +9,7 @@ namespace Temporada2025.Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class JugadorController : ControllerBase
     {
         private readonly IJugadorService _jugadorService;
@@ -29,6 +31,13 @@ namespace Temporada2025.Backend.Controllers
             return Ok($"Jugador registrado, Password: {result.Item2}");
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Detalle()
+        {
+            var result = await _jugadorService.DetalleJugador();
+            return Ok(result);
+        }
 
     }
 }
