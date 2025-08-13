@@ -39,6 +39,7 @@ namespace Temporada2025.Backend.Services
 
         public async Task<bool> RegistrarEstadistica(RegistrarEstadisticaRequest request)
         {
+           
             bool fechaValida = ValidarFechaJornada(request.fechaJornada);
             if (!fechaValida)
                 return false;
@@ -46,6 +47,12 @@ namespace Temporada2025.Backend.Services
             var jugadorId = _jugadorService.ObtenerJugadorId();
             if (jugadorId is null)
                 return false;
+
+            var yaExiste = await _UoW.EstadisticaRepository.GetByFechaJornada(request.fechaJornada, jugadorId.Value);
+            if (yaExiste != null)
+            {
+                return false;
+            }
 
             double puntaje = CalcularPuntaje(request.partidosJugados, request.goles, request.asistencias);
 
@@ -92,7 +99,8 @@ namespace Temporada2025.Backend.Services
             using (var connection = new SqlConnection(connectionString))
             {
                 string sql = @"
-                    SELECT 
+                    SELECT
+                        Id,
                         FechaJornada,
                         PartidosJugados,
                         Goles,
@@ -123,6 +131,7 @@ namespace Temporada2025.Backend.Services
             {
                 string sql = @"
                     SELECT 
+                        Id,
                         FechaJornada,
                         PartidosJugados,
                         Goles,
@@ -142,14 +151,7 @@ namespace Temporada2025.Backend.Services
         }
 
 
-        //private Guid? ObtenerJugadorId()
-        //{
-        //    var jugadorIdClaim = _U _httpContextAccessor.HttpContext.User
-        //        .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        //    return Guid.TryParse(jugadorIdClaim, out var jugadorId) ? jugadorId : (Guid?)null;
-        //}
-        //solo encargarse del update
         public async Task<bool> ActualizarEstadistica(Guid estadisticaId, ActualizarEstadisticaRequest request)
         {
             var estadistica = await _UoW.EstadisticaRepository.GetByIdAsync(estadisticaId);

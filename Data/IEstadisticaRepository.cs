@@ -9,6 +9,7 @@ namespace Temporada2025.Backend.Data
         Task<Estadistica> GetByIdAsync(Guid id);
         Task UpdateAsync(Estadistica estadistica);
         Task DeleteAsync(Estadistica estadistica);
+        Task<Estadistica?> GetByFechaJornada(DateOnly fechaJornada, Guid jugadorId);
 
     }
 }
