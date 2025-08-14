@@ -8,6 +8,10 @@ using Temporada2025.Backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//variable de entorno
+var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") ?? "http://localhost:5173";
+
+
 //DbContext configuration
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("cn1")));
@@ -28,11 +32,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("MiPoliticaCors", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins(frontendUrl)
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
+
 
 
 builder.Services.AddControllers();
@@ -70,13 +76,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 //añadi esto para los cors
-app.UseCors(options =>
-{
-    options.WithOrigins("http://localhost:5173")
-           .AllowAnyMethod()
-           .AllowCredentials()
-           .AllowAnyHeader();
-});
+app.UseCors("MiPoliticaCors");
 
 
 
