@@ -27,15 +27,19 @@ namespace Temporada2025.Backend.Services
             _jugadorService = jugadorService;
         }
 
-        public double CalcularPuntaje(int partidosJugados= 0, int goles=0, int asistencias=0)
+        public double CalcularPuntaje(int partidosJugados = 0, int goles = 0, int asistencias = 0)
         {
-           
-            int valorGoles = goles * 3;
-            int valorAsistencias = asistencias * 2;
-            return (valorGoles+valorAsistencias)/ partidosJugados;//si o si retonar un numero aun que sea null
+            if (partidosJugados <= 0)
+            {
+                return 0.0;
+            }
+            int valorGoles = Math.Max(goles, 0) * 3;
+            int valorAsistencias = Math.Max(asistencias, 0) * 2;
+
+            double puntaje = (valorGoles + valorAsistencias) / (double)partidosJugados;   
+            return Math.Max(puntaje, 0.0);
         }
 
-        //agregar una funcion para obtener el jugador por id del token
 
         public async Task<bool> RegistrarEstadistica(RegistrarEstadisticaRequest request)
         {
